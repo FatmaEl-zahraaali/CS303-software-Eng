@@ -3,11 +3,11 @@
 // ============= البيانات الوهمية (Mock Data) =============
 function getMockData(subject, month) {
     const subjectsData = {
-        'CS201': { students: 124, questions: 158, passRate: 84, attendance: 98, weeklyAttendance: [88,92,95,98] },
+        'CS303': { students: 124, questions: 158, passRate: 84, attendance: 98, weeklyAttendance: [88,92,95,98] },
         'CS202': { students: 108, questions: 135, passRate: 79, attendance: 85, weeklyAttendance: [76,80,82,85] },
-        'CS301': { students: 97, questions: 118, passRate: 89, attendance: 90, weeklyAttendance: [82,86,88,90] }
+        'CS309': { students: 97, questions: 118, passRate: 89, attendance: 90, weeklyAttendance: [82,86,88,90] }
     };
-    const subjectData = subjectsData[subject] || subjectsData['CS201'];
+    const subjectData = subjectsData[subject] || subjectsData['CS303'];
     
     const monthNames = { 
         '2026-01':'January', '2026-02':'February', '2026-03':'March',
