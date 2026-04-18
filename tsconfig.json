@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "extends": "./node_modules/expo/tsconfig.base",
+=======
+  "extends": "expo/tsconfig.base",
+>>>>>>> c1968d881bd70e524c450f8b8b3622d2313b5c86
   "compilerOptions": {
     "strict": true,
     "paths": {

@@ -1,7 +1,11 @@
 import { Tabs } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 
+<<<<<<< HEAD
 export default function TabsLayout() {
+=======
+export default function Layout() {
+>>>>>>> c1968d881bd70e524c450f8b8b3622d2313b5c86
   return (
     <Tabs
       screenOptions={{
@@ -20,5 +24,8 @@ export default function TabsLayout() {
       />
     </Tabs>
   );
+<<<<<<< HEAD
 
+=======
+>>>>>>> c1968d881bd70e524c450f8b8b3622d2313b5c86
 }
