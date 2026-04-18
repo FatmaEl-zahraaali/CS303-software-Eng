@@ -1,7 +1,9 @@
+import { useRouter } from "expo-router";
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from "react-native";
+import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Home() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor="#ff7a00" barStyle="light-content" />
@@ -13,18 +15,23 @@ export default function Home() {
 
       <View style={styles.body}>
 
-        <TouchableOpacity style={styles.card}>
-          <Text style={styles.cardText}>CS303</Text>
-        </TouchableOpacity>
+       <TouchableOpacity
+  style={styles.card}
+  onPress={() => router.push("/screens/Scan202")}
+>
+  <Text style={styles.cardText}>CS303</Text>
+</TouchableOpacity>
 
         <TouchableOpacity style={styles.card}>
           <Text style={styles.cardText}>CS309</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card}>
-          <Text style={styles.cardText}>CS202</Text>
-        </TouchableOpacity>
-
+<TouchableOpacity
+  style={styles.card}
+  onPress={() => router.push("/")}
+>
+  <Text style={styles.cardText}>CS202</Text>
+</TouchableOpacity>
       </View>
     </View>
   );
