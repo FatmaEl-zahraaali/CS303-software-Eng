@@ -43,7 +43,7 @@ export default function ScanCS202() {
   return (
     <View style={styles.page}>
 
-      {/* Camera */}
+    
       <CameraView
         style={styles.camera}
         facing="back"
@@ -53,7 +53,7 @@ export default function ScanCS202() {
         }}
       />
 
-      {/* Overlay */}
+    
       <View style={styles.overlay}>
         <View style={styles.scanBox} />
         <Text style={styles.text}>Align QR inside the box</Text>
@@ -78,10 +78,10 @@ const styles = StyleSheet.create({
   },
 
   scanBox: {
-    width: 320,              // 👈 أكبر
-    height: 320,             // 👈 أكبر
+    width: 320,              
+    height: 320,            
     borderWidth: 2,
-    borderColor: "#ffffff",  // 👈 أبيض
+    borderColor: "#ffffff",  
     borderRadius: 20,
     backgroundColor: "transparent",
   },
