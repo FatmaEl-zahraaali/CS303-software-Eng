@@ -8,7 +8,7 @@ export default function Layout() {
     <Tabs
       screenOptions={{
           headerShown: false,
-        tabBarActiveTintColor: "#FF4500",
+        tabBarActiveTintColor: "#135D56",
         tabBarInactiveTintColor: "gray",
       }}
     >
@@ -16,7 +16,7 @@ export default function Layout() {
         name="Home"
         options={{
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="home" size={size} color="#FF4500" />
+            <MaterialIcons name="home" size={size} color="#135D56" />
           ),
         }}
       />

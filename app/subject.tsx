@@ -1,81 +1,212 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
-
-
-const { width } = Dimensions.get("window");
-const CARD_SIZE = width * 0.3; // 
+import React, { useState } from "react";
+import {View,Text,StyleSheet,StatusBar,Pressable,useWindowDimensions,Platform} from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Subject() {
-  const { subject } = useLocalSearchParams<{ subject: string }>();
+  const router = useRouter();
+  const { code } = useLocalSearchParams<{ code: string }>();
+  const { width } = useWindowDimensions();
+
+  const PRIMARY_COLOR = "#135D56";
+  const LIGHT_BG = "#E0F2F1";
+
+  const isMobile = width < 600;
+  const isTablet = width >= 600 && width < 1024;
+
+  const CARD_SIZE = isMobile
+    ? width * 0.75
+    : isTablet
+    ? width * 0.35
+    : width * 0.22;
+
+  const [backActive, setBackActive] = useState(false);
+
+  const Card = ({ title, icon, onPress }: any) => {
+    const [active, setActive] = useState(false);
+
+    return (
+      <Pressable
+        onPress={onPress}
+        onHoverIn={() => Platform.OS === "web" && setActive(true)}
+        onHoverOut={() => Platform.OS === "web" && setActive(false)}
+        onPressIn={() => setActive(true)}
+        onPressOut={() => setActive(false)}
+        style={[
+          styles.card,
+          { width: CARD_SIZE },
+          active && styles.cardActive,
+        ]}
+      >
+        <View
+          style={[
+            styles.iconBox,
+            { backgroundColor: active ? "#ffffff30" : LIGHT_BG },
+          ]}
+        >
+          <Ionicons
+            name={icon}
+            size={30}
+            color={active ? "#fff" : PRIMARY_COLOR}
+          />
+        </View>
+
+        <Text style={[styles.cardText, active && { color: "#fff" }]}>
+          {title}
+        </Text>
+      </Pressable>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{subject}</Text>
+      <StatusBar backgroundColor={PRIMARY_COLOR} barStyle="light-content" />
 
       
-      <View style={styles.row}>
-        
-        <TouchableOpacity
-          style={[styles.card, styles.attendanceCard]}
-          onPress={() => router.push({ pathname: "/attendance", params: { subject } })}
-        >
-          <Text style={styles.cardText}>Attendance</Text>
-        </TouchableOpacity>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>{code}</Text>
 
-        <TouchableOpacity
-          style={[styles.card, styles.quizCard]}
-          onPress={() => router.push({ pathname: "/questionsbank", params: { subject } })}
+        <Pressable
+          onPress={() => router.back()}
+          onHoverIn={() => Platform.OS === "web" && setBackActive(true)}
+          onHoverOut={() => Platform.OS === "web" && setBackActive(false)}
+          onPressIn={() => setBackActive(true)}
+          onPressOut={() => setBackActive(false)}
+          style={[
+            styles.backBtn,
+            backActive && {
+              backgroundColor: PRIMARY_COLOR,
+              transform: [{ scale: 1.1 }],
+            },
+          ]}
         >
-          <Text style={styles.cardText}>QuestionsBank</Text>
-        </TouchableOpacity>
+          <Ionicons
+            name="arrow-back"
+            size={22}
+            color={backActive ? "#fff" : PRIMARY_COLOR}
+          />
+        </Pressable>
+      </View>
 
+      
+      <View style={styles.body}>
+        <View style={styles.logo}>
+          <Ionicons name="school" size={55} color={PRIMARY_COLOR} />
+        </View>
+
+        <Text style={styles.title}>Options</Text>
+
+        <View style={styles.grid}>
+          <Card
+            title="Attendance"
+            icon="checkmark-done"
+            onPress={() =>
+              router.push({ pathname: "/attendance", params: { code } })
+            }
+          />
+
+          <Card
+            title="Questions"
+            icon="help-circle"
+            onPress={() =>
+              router.push({ pathname: "/questionsbank", params: { code } })
+            }
+          />
+        </View>
       </View>
     </View>
   );
 }
 
+const PRIMARY_COLOR = "#135D56";
+const LIGHT_BG = "#E0F2F1";
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#F1F4F4",
+  },
+
+  header: {
+    paddingTop: Platform.OS === "android" ? 40 : 60,
+    paddingHorizontal: 20,
+    paddingBottom: 25,
+    backgroundColor: PRIMARY_COLOR,
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: 100,
+    borderBottomLeftRadius: 35,
+    borderBottomRightRadius: 35,
   },
-  title: {
+
+  headerTitle: {
     fontSize: 26,
-    fontWeight: "bold",
-    marginBottom: 50,
-    color: "#2d3436",
+    fontWeight: "800",
+    color: "#fff",
   },
-  row: {
-    flexDirection: "row", 
-    justifyContent: "space-evenly", 
-    width: "100%",
-    paddingHorizontal: 10,
+
+  backBtn: {
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 12,
   },
+
+  body: {
+    flex: 1,
+    alignItems: "center",
+    paddingTop: 30,
+    paddingHorizontal: 20,
+  },
+
+  logo: {
+    backgroundColor: LIGHT_BG,
+    padding: 20,
+    borderRadius: 40,
+    marginBottom: 15,
+  },
+
+  title: {
+    fontSize: 22,
+    fontWeight: "800",
+    marginBottom: 20,
+  },
+
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 20,
+    maxWidth: 1000,
+  },
+
   card: {
-    width: CARD_SIZE,
-    height: CARD_SIZE, 
-    borderRadius: 20, 
+    height: 180,
+    minWidth: 220,
+    maxWidth: 300,
+    backgroundColor: "#fff",
+    borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 5, 
-    shadowColor: "#000", 
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    elevation: 6,
   },
-  attendanceCard: {
-    backgroundColor: "#ff7a00",
+
+  cardActive: {
+    backgroundColor: PRIMARY_COLOR,
+    transform: [{ scale: 1.06 }],
   },
-  quizCard: {
-    backgroundColor: "#ff7a00",
+
+  iconBox: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
   },
+
   cardText: {
-    color: "#fff",
-    fontSize: 35,
-    fontWeight: "bold",
-    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#2A3A48",
   },
 });

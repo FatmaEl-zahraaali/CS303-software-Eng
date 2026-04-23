@@ -60,7 +60,7 @@ export default function CameraScreen() {
         facing="front"
       />
 
-      {/* 🔥 زرار برتقاني */}
+      
       <TouchableOpacity style={styles.button} onPress={takePhoto}>
         <Text style={styles.buttonText}>Take Selfie</Text>
       </TouchableOpacity>
@@ -133,9 +133,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
-  // 🔥 زرار برتقاني
+  
   button: {
-    backgroundColor: "#ff7a00",
+    backgroundColor: "#135D56",
     paddingVertical: 12,
     paddingHorizontal: 25,
     borderRadius: 12,
