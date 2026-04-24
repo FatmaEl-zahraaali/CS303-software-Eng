@@ -12,11 +12,9 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "my.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#E6F4FE"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
@@ -39,16 +37,18 @@
           }
         }
       ],
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "The app accesses your photos to let you set a profile picture."
-        }
-      ]
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a10bb4ad-0a64-4e07-85b0-3bae009d8242"
+      }
+    },
+    "owner": "aya_youssef_9990"
   }
 }

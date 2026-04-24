@@ -14,23 +14,54 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../config";
+
 const { width } = Dimensions.get("window");
 
 export default function LoginScreen() {
   const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+const handleLogin = async () => {
+  if (!email || !password) {
+    Alert.alert("Error", "Please enter email and password");
+    return;
+  }
 
-  const PRIMARY_COLOR = '#248A80';
+  setLoading(true);
 
-  const handleLogin = () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please enter email and password");
-      return;
+  
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+
+    router.replace("/Homepage");
+  } catch (error) {
+    let msg = "Something went wrong";
+
+    switch (error.code) {
+      case "auth/user-not-found":
+        msg = "No account found with this email";
+        break;
+      case "auth/wrong-password":
+        msg = "Incorrect password";
+        break;
+      case "auth/invalid-email":
+        msg = "Invalid email format";
+        break;
+      case "auth/too-many-requests":
+        msg = "Too many attempts. Try later";
+        break;
     }
-    router.replace("/Homepage"); 
-  };
+
+    Alert.alert("Login Failed", msg);
+  }
+
+  setLoading(false);
+};
 
   return (
     <KeyboardAvoidingView
@@ -57,40 +88,42 @@ export default function LoginScreen() {
             />
           </View>
 
-          <View style={styles.inputWrapper}>
-            <Ionicons name="lock-closed-outline" size={20} color={PRIMARY_COLOR} style={styles.icon} />
-            <TextInput
-              placeholder="Password"
-              style={[styles.input, { flex: 1 }]}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-              placeholderTextColor="#94A3B8"
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.showButton}
+         <View style={styles.passwordContainer}>
+  <TextInput
+    placeholder="Password"
+    style={styles.input}
+    value={password}
+    onChangeText={setPassword}
+    secureTextEntry={!showPassword}
+  />
+
+  <TouchableOpacity
+    onPress={() => setShowPassword(!showPassword)}
+    style={styles.showButton}
+  >
+    <Text style={styles.showButtonText}>
+      {showPassword ? "Hide" : "Show"}
+    </Text>
+  </TouchableOpacity>
+</View>
+
+         <TouchableOpacity
+  style={styles.btn}
+  onPress={handleLogin}
+  disabled={loading}
+>
+  <Text style={styles.btnText}>
+    {loading ? "Logging in..." : "Login"}
+  </Text>
+</TouchableOpacity>
+
+          <Text style={styles.switchText}>
+            Don't have an account?
+            <Text
+              style={styles.link}
+              onPress={() => router.push("/screens/SignupScreen")}
             >
-              <Ionicons 
-                name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                size={20} 
-                color="#94A3B8" 
-              />
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity 
-            style={[styles.btn, { backgroundColor: PRIMARY_COLOR }]} 
-            onPress={handleLogin}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.btnText}>Login</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => router.push("/screens/SignupScreen")}>
-            <Text style={styles.switchText}>
-              Don't have an account? 
-              <Text style={[styles.link, { color: PRIMARY_COLOR }]}> Sign Up</Text>
+              {" "}Sign Up
             </Text>
           </TouchableOpacity>
         </View>
@@ -117,13 +150,9 @@ const styles = StyleSheet.create({
   box: {
     width: width * 0.88,
     backgroundColor: "#fff",
-    padding: 30,
-    borderRadius: 35,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 10,
+    padding: 25,
+    borderRadius: 12,
+    elevation: 5,
   },
   title: {
     fontSize: 40,
@@ -151,13 +180,22 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   input: {
-    flex: 1,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: '#2A3A48',
+    width: "100%",
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    marginBottom: 10,
   },
   showButton: {
     padding: 5,
+  },
+  showButton: {
+    marginLeft: 10,
+  },
+  showButtonText: {
+    color: "#FF4500",
+    fontWeight: "bold",
   },
   btn: {
     width: "100%",
@@ -175,13 +213,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
-  switchText: { 
-    marginTop: 25, 
-    textAlign: "center", 
+  switchText: {
+    marginTop: 18,
+    textAlign: "center",
     fontSize: 15,
-    color: '#64748B',
   },
-  link: { 
+  link: {
+    color: "#FF4500",
     fontWeight: "bold",
   },
 });

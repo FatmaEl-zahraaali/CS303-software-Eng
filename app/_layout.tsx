@@ -22,12 +22,14 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="subject" />
-        <Stack.Screen name="questionsbank" />
-        <Stack.Screen name="attendance" />
-        <Stack.Screen name="login" />
+      <Stack
+       screenOptions={{
+        headerShown: false,
+      }}
+      >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="screens/login" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
     </ThemeProvider>
