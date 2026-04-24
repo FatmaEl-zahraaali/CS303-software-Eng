@@ -1,10 +1,3 @@
-<<<<<<< Updated upstream:app/(tabs)/index.tsx
-import { Redirect } from 'expo-router';
-
-export default function Index() {
-  return <Redirect href="/screens/login" />;
-}
-=======
 import { useRouter } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -98,4 +91,3 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
->>>>>>> Stashed changes:app/index.tsx
