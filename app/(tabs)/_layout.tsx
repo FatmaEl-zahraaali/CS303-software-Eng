@@ -18,7 +18,7 @@ export default function Layout() {
       }}
     >
       <Tabs.Screen
-        name="Home"
+        name="Homepage"
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => (
@@ -27,7 +27,7 @@ export default function Layout() {
         }}
       />
       
-      {}
+      
       <Tabs.Screen
         name="Profile"
         options={{

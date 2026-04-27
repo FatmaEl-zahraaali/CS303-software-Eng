@@ -9,23 +9,23 @@ export default function Welcome() {
   return (
     <View style={styles.container}>
       
-      {}
+      
       <Image
-        source={require("../assets/images/EduTrac.png")}
+        source={require("../assets/images/EduTrack.png")}
         style={styles.background}
       />
 
-      {}
+      
       <View style={styles.overlay} />
 
-      {}
+    
       <View style={styles.topContent}>
         <Animatable.Text animation="fadeInDown" style={styles.title}>
-          Welcome to EduTrac
+          Welcome to EduTrack
         </Animatable.Text>
       </View>
 
-      {}
+      
       <Animatable.View animation="fadeInUp" delay={500} style={styles.bottom}>
         <TouchableOpacity
           style={styles.button}
