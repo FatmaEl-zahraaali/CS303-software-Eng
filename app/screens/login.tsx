@@ -1,24 +1,23 @@
 import React, { useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Dimensions,
-  Platform,
-  KeyboardAvoidingView,
-  Alert,
-  ActivityIndicator,
+  View,
 } from "react-native";
 
-import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-
-
+import { useRouter } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../config/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../../config/firebaseConfig";
 
 const { width } = Dimensions.get("window");
 const PRIMARY_COLOR = "#4A90E2";
@@ -32,7 +31,6 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    
     if (!email || !password) {
       Alert.alert("Error", "Please enter both email and password.");
       return;
@@ -41,31 +39,40 @@ export default function LoginScreen() {
     setLoading(true);
 
     try {
-      
       const userCredential = await signInWithEmailAndPassword(
         auth,
-        email.trim(), 
+        email.trim(),
         password
       );
 
       const user = userCredential.user;
-      console.log("LOGIN SUCCESS:", user.uid);
+      
+      const docRef = doc(db, "users", user.uid);
+      const snap = await getDoc(docRef);
 
-      router.replace("/Homepage");
+      if (snap.exists()) {
+        const userData = snap.data();
+        
+        if (userData.role === "doctor") {
+          router.replace("/screens/DoctorProfile");
+        } else if (userData.role === "student") {
+          router.replace("/(tabs)/Homepage");
+        }
+      } else {
+        router.replace("/+not-found");
+      }
 
     } catch (error: any) {
-      console.log("LOGIN ERROR CODE:", error.code);
-
       let msg = "Login failed. Please try again.";
 
       if (error.code === "auth/user-not-found" || error.code === "auth/invalid-credential") {
-        msg = "This account does not exist. Please check your email or sign up.";
+        msg = "Account does not exist. Please check your email or sign up.";
       } else if (error.code === "auth/wrong-password") {
-        msg = "Incorrect password. Please try again.";
+        msg = "Incorrect password.";
       } else if (error.code === "auth/invalid-email") {
-        msg = "The email address is badly formatted.";
+        msg = "Invalid email format.";
       } else if (error.code === "auth/too-many-requests") {
-        msg = "Too many failed attempts. Access to this account has been temporarily disabled.";
+        msg = "Too many attempts. Account temporarily disabled.";
       }
 
       Alert.alert("Login Failed", msg);
