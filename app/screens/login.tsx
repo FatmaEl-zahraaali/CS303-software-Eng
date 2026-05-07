@@ -115,10 +115,12 @@ export default function LoginScreen() {
               secureTextEntry={!showPassword}
               placeholderTextColor="#94A3B8"
             />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-              <Text style={styles.showButtonText}>
-                {showPassword ? "Hide" : "Show"}
-              </Text>
+           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <Ionicons 
+                name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                size={22} 
+                color={PRIMARY_COLOR} 
+              />
             </TouchableOpacity>
           </View>
 
@@ -194,9 +196,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   passwordInput: { flex: 1, padding: 14 },
-  showButtonText: { color: "#FF4500", fontWeight: "bold" },
+  showButtonText: { color: "#4A90E2", fontWeight: "bold" },
   btn: { width: "100%", padding: 16, borderRadius: 15, marginTop: 15, alignItems: 'center' },
   btnText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
   switchText: { marginTop: 18, textAlign: "center", fontSize: 15 },
-  link: { color: "#FF4500", fontWeight: "bold" },
+  link: { color:"#4A90E2", fontWeight: "bold" },
 });
