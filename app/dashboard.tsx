@@ -13,8 +13,8 @@ import {
   View
 } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
-import { db } from '../../../config/firebaseConfig';
-import { useAuth } from '../../../context/AuthContext';
+import { db } from '../config/firebaseConfig';
+import { useAuth } from '../context/AuthContext';
 
 const { width: screenWidth } = Dimensions.get('window');
 

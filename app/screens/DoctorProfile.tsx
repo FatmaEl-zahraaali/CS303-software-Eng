@@ -161,7 +161,7 @@ const DoctorProfile = () => {
           <Text style={styles.cardTitle}>Attendance List</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card} onPress={() => router.push('/screens/dashboard' as any)}>
+        <TouchableOpacity style={styles.card} onPress={() => router.push('/dashboard' )}>
           <Ionicons name="stats-chart-outline" size={32} color="#5856D6" />
           <Text style={styles.cardTitle}>Dashboard</Text>
         </TouchableOpacity>
