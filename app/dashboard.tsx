@@ -1,495 +1,197 @@
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, RefreshControl, Dimensions } from 'react-native';
-import { useAuth } from '../context/AuthContext';
-import { router } from 'expo-router';
-import { useEffect, useState, useCallback } from 'react';
-import { db } from '../config/firebase';
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
-import { BarChart, PieChart } from 'react-native-chart-kit';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
+} from 'react-native';
+import { PieChart } from 'react-native-chart-kit';
+import { db } from '../../../config/firebaseConfig';
+import { useAuth } from '../../../context/AuthContext';
 
-const screenWidth = Dimensions.get('window').width;
+const { width: screenWidth } = Dimensions.get('window');
 
-export default function Dashboard() {
-  const { user, loading } = useAuth();
-  const [totalStudents, setTotalStudents] = useState(0);
-  const [attendanceCount, setAttendanceCount] = useState(0);
-  const [totalQuestions, setTotalQuestions] = useState(0);
-  const [passRate, setPassRate] = useState(0);
-  const [weeklyAttendance, setWeeklyAttendance] = useState([88, 92, 95, 98]);
-  const [recentAttendance, setRecentAttendance] = useState([]);
-  const [questionsDistribution, setQuestionsDistribution] = useState([
-    { name: 'Easy', count: 45, color: '#2c7da0' },
-    { name: 'Medium', count: 68, color: '#61a5c2' },
-    { name: 'Hard', count: 45, color: '#89c2d9' }
-  ]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedStudent, setSelectedStudent] = useState(null);
+export default function GeneralDashboardScreen() {
+  const { userData } = useAuth();
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+  const [easyCount, setEasyCount] = useState(0);
+  const [mediumCount, setMediumCount] = useState(0);
+  const [hardCount, setHardCount] = useState(0);
+  const [attendanceRate, setAttendanceRate] = useState(0);
+  const [presentCount, setPresentCount] = useState(0);
+  const [absentCount, setAbsentCount] = useState(0);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.replace('/login');
-    }
-  }, [user, loading]);
+    loadData();
+  }, []);
 
-  useEffect(() => {
-    if (user) {
-      loadDashboardData();
-    }
-  }, [user]);
-
-  async function loadDashboardData() {
+  const loadData = async () => {
+    if (!userData?.uid) return;
     try {
-      setIsLoading(true);
-      setError(null);
-      
-      const studentsSnap = await getDocs(collection(db, 'students'));
-      setTotalStudents(studentsSnap.size);
-      
-      const attendanceSnap = await getDocs(collection(db, 'attendance'));
-      setAttendanceCount(attendanceSnap.size);
-      
+      setLoading(true);
+      const studentsSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'student')));
+      const totalStudentsCount = studentsSnap.size;
+      setTotalStudents(totalStudentsCount);
       const questionsSnap = await getDocs(collection(db, 'questions'));
-      setTotalQuestions(questionsSnap.size);
-      
-      const recentQuery = query(
-        collection(db, 'attendance'),
-        orderBy('date', 'desc'),
-        limit(5)
-      );
-      const recentSnap = await getDocs(recentQuery);
-      const records = [];
-      recentSnap.forEach(doc => {
-        records.push({ id: doc.id, ...doc.data() });
+      let easy = 0, medium = 0, hard = 0;
+      questionsSnap.forEach((doc) => {
+        const diff = doc.data().difficulty;
+        if (diff === 'Easy') easy++;
+        else if (diff === 'Medium') medium++;
+        else if (diff === 'Hard') hard++;
       });
-      setRecentAttendance(records);
-      
-      setPassRate(85);
-      
-    } catch (err) {
-      console.error("Error loading dashboard:", err);
-      setError("Failed to load data. Please check your internet connection.");
+      setEasyCount(easy);
+      setMediumCount(medium);
+      setHardCount(hard);
+      setTotalQuestions(easy + medium + hard);
+      const attendanceSnap = await getDocs(collection(db, 'attendance_records'));
+      const totalAttendance = attendanceSnap.size;
+      const uniqueSessions = new Set(attendanceSnap.docs.map(doc => doc.data().sessionId)).size;
+      const maxPossible = totalStudentsCount * uniqueSessions;
+      const rate = maxPossible > 0 ? (totalAttendance / maxPossible) * 100 : 0;
+      setAttendanceRate(Math.round(rate));
+      setPresentCount(totalAttendance);
+      setAbsentCount(Math.max(0, maxPossible - totalAttendance));
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Failed to load dashboard');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
       setRefreshing(false);
     }
-  }
+  };
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    loadDashboardData();
+    loadData();
   }, []);
 
-  if (loading || isLoading) {
+  if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#2c7da0" />
-        <Text style={styles.loadingText}>Loading dashboard...</Text>
-      </View>
+      <LinearGradient colors={['#667eea', '#764ba2']} style={styles.center}>
+        <ActivityIndicator size="large" color="#fff" />
+        <Text style={styles.loadingText}>Loading Dashboard...</Text>
+      </LinearGradient>
     );
   }
 
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>⚠️ {error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={loadDashboardData}>
-          <Text style={styles.retryButtonText}>Try Again</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  const attendanceData = [
+    { name: 'Present', count: presentCount, color: '#8BC34A', legendFontColor: '#333', legendFontSize: 12 },
+    { name: 'Absent', count: absentCount, color: '#E65100', legendFontColor: '#333', legendFontSize: 12 },
+  ];
 
-  if (!user) return null;
+  const questionsData = [
+    { name: 'Easy', count: easyCount, color: '#8BC34A', legendFontColor: '#333', legendFontSize: 12 },
+    { name: 'Medium', count: mediumCount, color: '#FF9800', legendFontColor: '#333', legendFontSize: 12 },
+    { name: 'Hard', count: hardCount, color: '#BF360C', legendFontColor: '#333', legendFontSize: 12 },
+  ];
 
   return (
-    <ScrollView 
+    <ScrollView
       style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <View style={styles.welcomeContainer}>
-        <Text style={styles.welcomeTitle}>Welcome Back,</Text>
-        <Text style={styles.welcomeSubtitle}>{user.email}</Text>
+      <LinearGradient colors={['#667eea', '#764ba2']} style={styles.headerGradient}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greetingText}>Welcome Back,</Text>
+            <Text style={styles.userName}>Dr. {userData?.name || 'Doctor'}</Text>
+          </View>
+        </View>
+      </LinearGradient>
+
+      <View style={styles.statsRow}>
+        <LinearGradient colors={['#fff', '#f8f9fa']} style={styles.statCard}>
+          <View style={[styles.statIcon, { backgroundColor: '#4A90E2' + '20' }]}>
+            <Ionicons name="people-outline" size={24} color="#4A90E2" />
+          </View>
+          <Text style={[styles.statValue, { color: '#4A90E2' }]}>{totalStudents}</Text>
+          <Text style={styles.statTitle}>Total Students</Text>
+        </LinearGradient>
+
+        <LinearGradient colors={['#fff', '#f8f9fa']} style={styles.statCard}>
+          <View style={[styles.statIcon, { backgroundColor: '#8BC34A' + '20' }]}>
+            <Ionicons name="help-circle-outline" size={24} color="#8BC34A" />
+          </View>
+          <Text style={[styles.statValue, { color: '#8BC34A' }]}>{totalQuestions}</Text>
+          <Text style={styles.statTitle}>Questions</Text>
+        </LinearGradient>
+
+        <LinearGradient colors={['#fff', '#f8f9fa']} style={styles.statCard}>
+          <View style={[styles.statIcon, { backgroundColor: '#FF9800' + '20' }]}>
+            <Ionicons name="checkmark-done-outline" size={24} color="#FF9800" />
+          </View>
+          <Text style={[styles.statValue, { color: '#FF9800' }]}>{attendanceRate}%</Text>
+          <Text style={styles.statTitle}>Attendance Rate</Text>
+        </LinearGradient>
       </View>
-      
-      <View style={styles.cardsGrid}>
-        <View style={styles.card}>
-          <View style={[styles.cardIconContainer, { backgroundColor: '#e0f2fe' }]}>
-            <Text style={styles.cardIcon}>👥</Text>
-          </View>
-          <Text style={styles.cardTitle}>Total Students</Text>
-          <Text style={styles.cardValue}>{totalStudents}</Text>
+
+      <LinearGradient colors={['#fff', '#f8f9fa']} style={styles.chartCard}>
+        <View style={styles.sectionHeader}>
+          <Ionicons name="pie-chart-outline" size={22} color="#667eea" />
+          <Text style={styles.chartTitle}>Attendance vs Absence</Text>
         </View>
-        
-        <View style={styles.card}>
-          <View style={[styles.cardIconContainer, { backgroundColor: '#dcfce7' }]}>
-            <Text style={styles.cardIcon}>✅</Text>
-          </View>
-          <Text style={styles.cardTitle}>Attendance</Text>
-          <Text style={styles.cardValue}>{attendanceCount}</Text>
+        {presentCount + absentCount > 0 ? (
+          <PieChart
+            data={attendanceData}
+            width={screenWidth - 48}
+            height={200}
+            chartConfig={{ color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})` }}
+            accessor="count"
+            backgroundColor="transparent"
+            paddingLeft="15"
+            absolute
+          />
+        ) : (
+          <Text style={styles.emptyText}>No attendance data yet</Text>
+        )}
+      </LinearGradient>
+
+      <LinearGradient colors={['#fff', '#f8f9fa']} style={styles.chartCard}>
+        <View style={styles.sectionHeader}>
+          <Ionicons name="pie-chart-outline" size={22} color="#667eea" />
+          <Text style={styles.chartTitle}>Questions by Difficulty</Text>
         </View>
-        
-        <View style={styles.card}>
-          <View style={[styles.cardIconContainer, { backgroundColor: '#fef9c3' }]}>
-            <Text style={styles.cardIcon}>📚</Text>
-          </View>
-          <Text style={styles.cardTitle}>Questions Bank</Text>
-          <Text style={styles.cardValue}>{totalQuestions}</Text>
-        </View>
-        
-        <View style={styles.card}>
-          <View style={[styles.cardIconContainer, { backgroundColor: '#fce7f3' }]}>
-            <Text style={styles.cardIcon}>📊</Text>
-          </View>
-          <Text style={styles.cardTitle}>Pass Rate</Text>
-          <Text style={styles.cardValue}>{passRate}%</Text>
-        </View>
-      </View>
-      
-      <View style={styles.chartContainer}>
-        <Text style={styles.sectionTitle}>Weekly Attendance Trend</Text>
-        <BarChart
-          data={{
-            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-            datasets: [{ data: weeklyAttendance }]
-          }}
-          width={screenWidth - 48}
-          height={220}
-          yAxisSuffix=""
-          yAxisInterval={1}
-          chartConfig={{
-            backgroundColor: '#ffffff',
-            backgroundGradientFrom: '#2c7da0',
-            backgroundGradientTo: '#61a5c2',
-            decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-            style: { borderRadius: 16 },
-          }}
-          style={styles.chart}
-        />
-      </View>
-      
-      <View style={styles.chartContainer}>
-        <Text style={styles.sectionTitle}>Questions by Difficulty</Text>
         <PieChart
-          data={questionsDistribution}
+          data={questionsData}
           width={screenWidth - 48}
           height={200}
-          chartConfig={{
-            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-          }}
+          chartConfig={{ color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})` }}
           accessor="count"
           backgroundColor="transparent"
           paddingLeft="15"
           absolute
         />
-        <View style={styles.legendContainer}>
-          {questionsDistribution.map((item, index) => (
-            <View key={index} style={styles.legendItem}>
-              <View style={[styles.legendColor, { backgroundColor: item.color }]} />
-              <Text style={styles.legendText}>{item.name}: {item.count}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-      
-      <View style={styles.tableContainer}>
-        <Text style={styles.sectionTitle}>Recent Attendance Records</Text>
-        <View style={styles.tableHeader}>
-          <Text style={[styles.tableCell, styles.tableHeaderCell]}>Student Name</Text>
-          <Text style={[styles.tableCell, styles.tableHeaderCell]}>Status</Text>
-          <Text style={[styles.tableCell, styles.tableHeaderCell]}>Date</Text>
-        </View>
-        
-        {recentAttendance.map((item) => (
-          <TouchableOpacity key={item.id} onPress={() => setSelectedStudent(item)}>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableCell}>{item.studentName || item.name || 'Unknown'}</Text>
-              <Text style={[
-                styles.tableCell,
-                item.status === 'present' ? styles.statusPresent : 
-                item.status === 'late' ? styles.statusLate : styles.statusAbsent
-              ]}>
-                {item.status || 'absent'}
-              </Text>
-              <Text style={styles.tableCell}>{item.date || 'N/A'}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </View>
-      
-      <Modal
-        visible={!!selectedStudent}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setSelectedStudent(null)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Student Details</Text>
-              <TouchableOpacity onPress={() => setSelectedStudent(null)}>
-                <Text style={styles.modalClose}>✕</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.modalBody}>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Name:</Text>
-                <Text style={styles.detailValue}>{selectedStudent?.studentName || selectedStudent?.name}</Text>
-              </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>ID:</Text>
-                <Text style={styles.detailValue}>{selectedStudent?.studentId || 'N/A'}</Text>
-              </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Status:</Text>
-                <Text style={[
-                  styles.detailValue,
-                  selectedStudent?.status === 'present' ? styles.statusPresent : 
-                  selectedStudent?.status === 'late' ? styles.statusLate : styles.statusAbsent
-                ]}>
-                  {selectedStudent?.status || 'absent'}
-                </Text>
-              </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Date:</Text>
-                <Text style={styles.detailValue}>{selectedStudent?.date || 'N/A'}</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      </LinearGradient>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f8fafc',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#1e3a5f',
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#ef4444',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  retryButton: {
-    backgroundColor: '#2c7da0',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
-  },
-  retryButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  welcomeContainer: {
-    padding: 24,
-    paddingBottom: 8,
-  },
-  welcomeTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1e3a5f',
-  },
-  welcomeSubtitle: {
-    fontSize: 14,
-    color: '#64748b',
-    marginTop: 4,
-  },
-  cardsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-  },
-  card: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 16,
-    width: '48%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  cardIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  cardIcon: {
-    fontSize: 24,
-  },
-  cardTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#64748b',
-    textTransform: 'uppercase',
-    marginBottom: 4,
-  },
-  cardValue: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#0f2b3d',
-  },
-  chartContainer: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1e3a5f',
-    marginBottom: 16,
-  },
-  chart: {
-    borderRadius: 16,
-    marginVertical: 8,
-  },
-  legendContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-    marginTop: 12,
-    gap: 16,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  legendColor: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 6,
-  },
-  legendText: {
-    fontSize: 12,
-    color: '#334155',
-  },
-  tableContainer: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  tableHeader: {
-    flexDirection: 'row',
-    backgroundColor: '#f1f5f9',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  tableHeaderCell: {
-    color: '#1e3a5f',
-    fontWeight: 'bold',
-  },
-  tableRow: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-    marginBottom: 4,
-  },
-  tableCell: {
-    flex: 1,
-    fontSize: 12,
-    color: '#334155',
-  },
-  statusPresent: {
-    color: '#10b981',
-    fontWeight: 'bold',
-  },
-  statusLate: {
-    color: '#f59e0b',
-    fontWeight: 'bold',
-  },
-  statusAbsent: {
-    color: '#ef4444',
-    fontWeight: 'bold',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: 'white',
-    borderRadius: 24,
-    width: '85%',
-    overflow: 'hidden',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1e3a5f',
-  },
-  modalClose: {
-    fontSize: 20,
-    color: '#94a3b8',
-    fontWeight: 'bold',
-  },
-  modalBody: {
-    padding: 20,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    marginBottom: 12,
-  },
-  detailLabel: {
-    width: 70,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#64748b',
-  },
-  detailValue: {
-    flex: 1,
-    fontSize: 14,
-    color: '#1e293b',
-  },
+  container: { flex: 1, backgroundColor: '#f5f7fa' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { marginTop: 12, fontSize: 16, color: '#fff', fontWeight: '500' },
+  headerGradient: { paddingTop: 50, paddingBottom: 30, borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
+  header: { paddingHorizontal: 20 },
+  greetingText: { fontSize: 14, color: 'rgba(255,255,255,0.8)' },
+  userName: { fontSize: 28, fontWeight: 'bold', color: '#fff' },
+  statsRow: { flexDirection: 'row', paddingHorizontal: 16, gap: 12, marginTop: -15, marginBottom: 16 },
+  statCard: { flex: 1, borderRadius: 16, padding: 14, alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05 },
+  statIcon: { width: 45, height: 45, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+  statValue: { fontSize: 22, fontWeight: 'bold' },
+  statTitle: { fontSize: 11, color: '#666', marginTop: 4 },
+  chartCard: { marginHorizontal: 16, marginBottom: 16, padding: 16, borderRadius: 20, backgroundColor: '#fff', elevation: 2 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 },
+  chartTitle: { fontSize: 16, fontWeight: 'bold', color: '#1a1a2e' },
+  emptyText: { textAlign: 'center', color: '#a0a0a0', marginTop: 20, marginBottom: 20 },
 });
