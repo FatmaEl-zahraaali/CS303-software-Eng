@@ -106,7 +106,7 @@ export default function AIGeneratorScreen() {
 
       <TouchableOpacity style={styles.uploadBtn} onPress={pickDocument}>
         <Ionicons name="document-text-outline" size={20} color="#667eea" />
-        <Text style={styles.uploadText}>{selectedFile ? selectedFile.name : '📄 Upload PDF'}</Text>
+        <Text style={styles.uploadText}>{selectedFile ? selectedFile.name : 'Upload PDF'}</Text>
       </TouchableOpacity>
 
       <View style={styles.row}>
