@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 4
   },
-  cardTitle: { fontSize: 15, fontWeight: 'bold', marginTop: 10, color: '#333' }
+  cardTitle: { fontSize: 15, fontWeight: 'bold', marginTop: 10, color: '#333' },
    aiCard: {
     borderWidth: 1,
     borderColor: '#8B5CF6',
