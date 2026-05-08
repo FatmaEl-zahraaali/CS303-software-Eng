@@ -1,1 +1,34 @@
 
+# Dependencies
+node_modules/
+functions/node_modules/
+.expo/
+
+
+# Environment & Secrets
+.env
+.secret.local
+*.pem
+*.key
+
+# Build & Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+functions/lib/
+dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Firebase
+*.debug.log
+.firebase/
