@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import {View,Text,StyleSheet,StatusBar,Pressable,useWindowDimensions,Platform} from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useState } from "react";
+import { Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 export default function Subject() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function Subject() {
 
   const [backActive, setBackActive] = useState(false);
 
-  const Card = ({ title, icon, onPress }: any) => {
+  const Card = ({ title, icon, onPress, isNew = false }: any) => {
     const [active, setActive] = useState(false);
 
     return (
@@ -54,6 +54,12 @@ export default function Subject() {
         <Text style={[styles.cardText, active && { color: "#fff" }]}>
           {title}
         </Text>
+        
+        {isNew && !active && (
+          <View style={styles.newBadge}>
+            <Text style={styles.newBadgeText}>NEW</Text>
+          </View>
+        )}
       </Pressable>
     );
   };
@@ -62,7 +68,6 @@ export default function Subject() {
     <View style={styles.container}>
       <StatusBar backgroundColor={PRIMARY_COLOR} barStyle="light-content" />
 
-      
       <View style={styles.header}>
         <Text style={styles.headerTitle}>{code}</Text>
 
@@ -89,31 +94,46 @@ export default function Subject() {
       </View>
 
       
-      <View style={styles.body}>
-        <View style={styles.logo}>
-          <Ionicons name="school" size={55} color={PRIMARY_COLOR} />
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+      >
+        <View style={styles.body}>
+          <View style={styles.logo}>
+            <Ionicons name="school" size={55} color={PRIMARY_COLOR} />
+          </View>
+
+          <Text style={styles.title}>Options</Text>
+
+          <View style={styles.grid}>
+            <Card
+              title="Attendance"
+              icon="checkmark-done"
+              onPress={() =>
+                router.push({ pathname: "/attendance", params: { code } })
+              }
+            />
+
+            <Card
+              title="Questions"
+              icon="help-circle"
+              onPress={() =>
+                router.push({ pathname: "/questionsbank", params: { code } })
+              }
+            />
+
+            <Card
+              title="AI Assistant"
+              icon="chatbubbles"
+              onPress={() =>
+                router.push({ pathname: "/screens/AI/ai-assistant", params: { code } })
+              }
+              isNew={true}
+            />
+          </View>
         </View>
-
-        <Text style={styles.title}>Options</Text>
-
-        <View style={styles.grid}>
-          <Card
-            title="Attendance"
-            icon="checkmark-done"
-            onPress={() =>
-              router.push({ pathname: "/attendance", params: { code } })
-            }
-          />
-
-          <Card
-            title="Questions"
-            icon="help-circle"
-            onPress={() =>
-              router.push({ pathname: "/questionsbank", params: { code } })
-            }
-          />
-        </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -151,8 +171,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
 
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingBottom: 30,
+  },
+
   body: {
-    flex: 1,
     alignItems: "center",
     paddingTop: 30,
     paddingHorizontal: 20,
@@ -188,6 +213,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     elevation: 6,
+    position: "relative",
   },
 
   cardActive: {
@@ -208,5 +234,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "800",
     color: "#2A3A48",
+  },
+
+  newBadge: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    backgroundColor: "#135D56",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+
+  newBadgeText: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#fff",
   },
 });
