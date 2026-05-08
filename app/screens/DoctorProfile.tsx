@@ -170,6 +170,13 @@ const DoctorProfile = () => {
           <Ionicons name="trophy-outline" size={32} color="#FF9500" />
           <Text style={styles.cardTitle}>Quiz Results</Text>
         </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.card, styles.aiCard]} 
+          onPress={() => router.push('/screens/AI/ai-generator')}>
+          <Ionicons name="bulb-outline" size={34} color="#8B5CF6" />
+          <Text style={styles.cardTitle}>AI Quiz</Text>
+          <Text style={styles.aiBadge}>NEW</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -247,6 +254,24 @@ const styles = StyleSheet.create({
     elevation: 4
   },
   cardTitle: { fontSize: 15, fontWeight: 'bold', marginTop: 10, color: '#333' }
+   aiCard: {
+    borderWidth: 1,
+    borderColor: '#8B5CF6',
+    backgroundColor: '#F3E8FF',
+  },
+  aiBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 12,
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    fontSize: 8,
+    fontWeight: 'bold',
+    color: '#fff',
+    overflow: 'hidden',
+  },
 });
 
 export default DoctorProfile;
