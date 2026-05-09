@@ -1,24 +1,22 @@
-import React, { useState } from "react";
-import {View,Text,StyleSheet,StatusBar,Pressable,useWindowDimensions,Platform} from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useState } from "react";
+import { Platform, Pressable, StatusBar, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 export default function Subject() {
   const router = useRouter();
   const { code } = useLocalSearchParams<{ code: string }>();
   const { width } = useWindowDimensions();
-
   const PRIMARY_COLOR = "#135D56";
   const LIGHT_BG = "#E0F2F1";
-
   const isMobile = width < 600;
   const isTablet = width >= 600 && width < 1024;
 
   const CARD_SIZE = isMobile
     ? width * 0.75
     : isTablet
-    ? width * 0.35
-    : width * 0.22;
+      ? width * 0.35
+      : width * 0.22;
 
   const [backActive, setBackActive] = useState(false);
 
@@ -62,10 +60,9 @@ export default function Subject() {
     <View style={styles.container}>
       <StatusBar backgroundColor={PRIMARY_COLOR} barStyle="light-content" />
 
-      
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>{code}</Text>
 
+      <View style={styles.header}>       
+          <Text style={styles.headerTitle}>{code}</Text>
         <Pressable
           onPress={() => router.back()}
           onHoverIn={() => Platform.OS === "web" && setBackActive(true)}
@@ -78,8 +75,7 @@ export default function Subject() {
               backgroundColor: PRIMARY_COLOR,
               transform: [{ scale: 1.1 }],
             },
-          ]}
-        >
+          ]}>
           <Ionicons
             name="arrow-back"
             size={22}
@@ -88,10 +84,10 @@ export default function Subject() {
         </Pressable>
       </View>
 
-      
+
       <View style={styles.body}>
         <View style={styles.logo}>
-          <Ionicons name="school" size={55} color={PRIMARY_COLOR} />
+          <Ionicons name="swap-horizontal-outline" size={55} color={PRIMARY_COLOR} />
         </View>
 
         <Text style={styles.title}>Options</Text>
@@ -102,14 +98,12 @@ export default function Subject() {
             icon="checkmark-done"
             onPress={() =>
               router.push({ pathname: "/attendance", params: { code } })
-            }
-          />
-
+            }/>
           <Card
             title="Questions"
             icon="help-circle"
             onPress={() =>
-              router.push({ pathname: "/questionsbank", params: { code } })
+              router.push({ pathname: "/chapters", params: { code } })
             }
           />
         </View>
@@ -128,23 +122,28 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    paddingTop: Platform.OS === "android" ? 40 : 60,
-    paddingHorizontal: 20,
+    paddingTop: 55,
     paddingBottom: 25,
-    backgroundColor: PRIMARY_COLOR,
+    paddingHorizontal: 25,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottomLeftRadius: 35,
-    borderBottomRightRadius: 35,
+    backgroundColor: "#135D56",
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
   },
 
   headerTitle: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: "800",
     color: "#fff",
   },
 
+  headerSubtitle: {
+    fontSize: 14,
+    color: "#E0F2F1",
+    marginTop: 2,
+  },
   backBtn: {
     backgroundColor: "#fff",
     padding: 10,
