@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { auth, db } from "../config/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { auth, db } from "../config/firebaseConfig";
 
 type UserData = {
   uid: string;
@@ -32,18 +32,8 @@ export const AuthProvider = ({ children }: any) => {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
       if (u) {
         await u.reload();
-
-        
-        if (!u.emailVerified) {
-          setUser(null);
-          setUserData(null);
-          setLoading(false);
-          return;
-        }
-
         setUser(u);
 
-        try {
           const docRef = doc(db, "users", u.uid);
           const snap = await getDoc(docRef);
 
@@ -52,10 +42,8 @@ export const AuthProvider = ({ children }: any) => {
           } else {
             setUserData(null);
           }
-        } catch (e) {
-          console.log("Firestore error:", e);
           setUserData(null);
-        }
+        
       } else {
         setUser(null);
         setUserData(null);
