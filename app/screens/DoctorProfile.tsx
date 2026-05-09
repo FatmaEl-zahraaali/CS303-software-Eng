@@ -1,24 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Image,
-  Alert,
-  Platform,
-  Modal,
-  Dimensions
-} from 'react-native';
-
-import { useAuth } from '../../context/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
-import { doc, updateDoc, onSnapshot } from "firebase/firestore";
+import { useRouter } from 'expo-router';
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Dimensions, Image, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { db } from "../../config/firebaseConfig";
+import { useAuth } from '../../context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -73,7 +60,7 @@ const DoctorProfile = () => {
     try {
       const data = new FormData();
       const fileUri = Platform.OS === 'android' ? uri : uri.replace('file://', '');
-      
+
       data.append('file', {
         uri: fileUri,
         type: 'image/jpeg',
@@ -109,24 +96,24 @@ const DoctorProfile = () => {
     <ScrollView style={styles.container}>
       <Modal visible={isModalVisible} transparent={true} animationType="fade">
         <View style={styles.modalBackground}>
-          <TouchableOpacity 
-            style={styles.closeButton} 
+          <TouchableOpacity
+            style={styles.closeButton}
             onPress={() => setIsModalVisible(false)}
           >
             <Ionicons name="close-circle" size={40} color="white" />
           </TouchableOpacity>
-          <Image 
-            source={{ uri: currentImage }} 
-            style={styles.fullImage} 
-            resizeMode="contain" 
+          <Image
+            source={{ uri: currentImage }}
+            style={styles.fullImage}
+            resizeMode="contain"
           />
         </View>
       </Modal>
 
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
-          <TouchableOpacity 
-            style={styles.avatar} 
+          <TouchableOpacity
+            style={styles.avatar}
             onPress={() => setIsModalVisible(true)}
             disabled={uploading}
           >
@@ -167,8 +154,8 @@ const DoctorProfile = () => {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.card} onPress={() => router.push('/screens/DoctorResultsScreen')}>
-          <Ionicons name="trophy-outline" size={32} color="#FF9500" />
-          <Text style={styles.cardTitle}>Quiz Results</Text>
+          <Ionicons name="star-outline" size={32} color="#FF9500" />
+          <Text style={styles.cardTitle}>Reviews</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -176,8 +163,15 @@ const DoctorProfile = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f4f9' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  container: {
+    flex: 1,
+    backgroundColor: '#f4f4f9'
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
   header: {
     backgroundColor: '#007AFF',
     padding: 50,
@@ -200,7 +194,10 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderColor: 'rgba(255,255,255,0.3)',
   },
-  imageStyle: { width: '100%', height: '100%' },
+  imageStyle: {
+    width: '100%',
+    height: '100%'
+  },
   editIconBadge: {
     position: 'absolute',
     bottom: 5,
@@ -230,7 +227,11 @@ const styles = StyleSheet.create({
     right: 20,
     zIndex: 1
   },
-  name: { fontSize: 24, fontWeight: 'bold', color: '#fff' },
+  name: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff'
+  },
   grid: {
     padding: 20,
     flexDirection: 'row',
@@ -246,7 +247,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 4
   },
-  cardTitle: { fontSize: 15, fontWeight: 'bold', marginTop: 10, color: '#333' }
+  cardTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    marginTop: 10,
+    color: '#333'
+  }
 });
 
 export default DoctorProfile;
