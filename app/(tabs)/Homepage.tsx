@@ -1,15 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Dimensions, Pressable, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Animated, Dimensions, Pressable, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+const PRIMARY_COLOR = "#135D56";
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 60) / 3;
 
 export default function SubjectList() {
   const router = useRouter();
+  const [scaleValue] = useState(new Animated.Value(1));
 
-  const PRIMARY_COLOR = '#135D56'; 
+  const PRIMARY_COLOR = '#135D56';
+  const SECONDARY_COLOR = '#1B7A6E';
   const ICON_BG_LIGHT = '#E0F2F1';
 
   const goToSubject = (subjectCode: string) => {
@@ -20,78 +24,107 @@ export default function SubjectList() {
   };
 
   const goToProfile = () => {
-    router.push('/(tabs)/profile' as any);
+    router.push('/Profile');
   };
 
-  const SubjectCard = ({ code, icon }: { code: string, icon: any }) => {
+  const SubjectCard = ({ code, icon, color = PRIMARY_COLOR }: { code: string, icon: any, color?: string }) => {
+    const [pressed, setPressed] = useState(false);
+
     return (
       <Pressable
         onPress={() => goToSubject(code)}
-        style={({ pressed }) => [
+        onPressIn={() => setPressed(true)}
+        onPressOut={() => setPressed(false)}
+        style={[
           styles.card,
-          pressed && { backgroundColor: PRIMARY_COLOR }
+          pressed && styles.cardPressed,
         ]}
       >
-        {({ pressed }) => {
-          const isActive = pressed; 
-          return (
-            <View style={styles.cardInternal}>
-              <View style={[
-                styles.iconWrapper, 
-                { backgroundColor: isActive ? 'rgba(255,255,255,0.2)' : ICON_BG_LIGHT }
-              ]}>
-                <Ionicons 
-                  name={icon} 
-                  size={32} 
-                  color={isActive ? '#FFFFFF' : PRIMARY_COLOR} 
-                />
-              </View>
-              <Text style={[styles.subjectCode, isActive && { color: '#FFFFFF' }]}>
-                {code}
-              </Text>
+        <LinearGradient
+          colors={pressed ? [PRIMARY_COLOR, SECONDARY_COLOR] : ['#fff', '#fff']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.cardGradient}
+        >
+          <View style={[
+            styles.iconWrapper,
+            { backgroundColor: pressed ? 'rgba(255,255,255,0.2)' : ICON_BG_LIGHT }
+          ]}>
+            <Ionicons
+              name={icon}
+              size={32}
+              color={pressed ? '#FFFFFF' : color}
+            />
+          </View>
+          <Text style={[styles.subjectCode, pressed && { color: '#FFFFFF' }]}>
+            {code}
+          </Text>
+          {!pressed && (
+            <View style={styles.cardBadge}>
+              <LinearGradient
+                colors={[PRIMARY_COLOR, SECONDARY_COLOR]}
+                style={styles.badgeGradient}
+              >
+                <Text style={styles.badgeText}>View</Text>
+              </LinearGradient>
             </View>
-          );
-        }}
+          )}
+        </LinearGradient>
       </Pressable>
     );
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#F8FAFC', '#F1F4F4']}
+      style={styles.container}
+    >
       <StatusBar backgroundColor={PRIMARY_COLOR} barStyle="light-content" />
 
-      <View style={[styles.header, { backgroundColor: PRIMARY_COLOR }]}>
+      <LinearGradient
+        colors={[PRIMARY_COLOR, SECONDARY_COLOR]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.header}
+      >
         <View>
           <Text style={styles.title}>Explore</Text>
           <Text style={styles.subtitle}>Your Academic Hub</Text>
         </View>
         <TouchableOpacity style={styles.profileBadge} onPress={goToProfile}>
-          <Ionicons name="person" size={24} color={PRIMARY_COLOR} />
+          <LinearGradient
+            colors={['#fff', '#f0f0f0']}
+            style={styles.profileGradient}
+          >
+            <Ionicons name="person" size={24} color={PRIMARY_COLOR} />
+          </LinearGradient>
         </TouchableOpacity>
-      </View>
+      </LinearGradient>
 
       <View style={styles.centeredBody}>
-        
-        <View style={styles.logoContainer}>
-           <Ionicons name="school" size={60} color={PRIMARY_COLOR} />
-        </View>
-        
-        <Text style={styles.sectionTitle}>Courses</Text>
-        
+        <LinearGradient
+          colors={[ICON_BG_LIGHT, '#fff']}
+          style={styles.logoContainer}
+        >
+          <Ionicons name="school" size={60} color={PRIMARY_COLOR} />
+        </LinearGradient>
+
+        <Text style={styles.sectionTitle}>My Courses</Text>
+        <Text style={styles.sectionSubtitle}>Select a course to continue</Text>
+
         <View style={styles.gridContainer}>
           <SubjectCard code="CS303" icon="layers" />
           <SubjectCard code="CS309" icon="code-slash" />
           <SubjectCard code="CS202" icon="terminal" />
         </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F1F4F4',
   },
   header: {
     paddingTop: 60,
@@ -105,65 +138,86 @@ const styles = StyleSheet.create({
     elevation: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
   },
   title: {
-    fontSize: 30,
+    fontSize: 32,
     fontWeight: '800',
     color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   subtitle: {
     fontSize: 15,
     color: '#B2DFDB',
-    marginTop: 2,
+    marginTop: 4,
+    letterSpacing: 0.3,
   },
   profileBadge: {
-    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    overflow: 'hidden',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  profileGradient: {
     padding: 12,
     borderRadius: 20,
-    elevation: 5,
   },
   centeredBody: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 15,
+    paddingHorizontal: 20,
   },
   logoContainer: {
-    marginBottom: 20,
-    backgroundColor: '#E0F2F1',
-    padding: 20,
-    borderRadius: 40,
+    marginBottom: 24,
+    padding: 24,
+    borderRadius: 60,
+    elevation: 6,
+    shadowColor: PRIMARY_COLOR,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   sectionTitle: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: '700',
-    color: '#2A3A48',
-    marginBottom: 20,
+    color: '#1E293B',
+    marginBottom: 8,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#64748B',
+    marginBottom: 32,
   },
   gridContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     width: '100%',
+    gap: 12,
   },
   card: {
-    backgroundColor: '#FFFFFF',
     width: CARD_WIDTH,
-    height: 185,
-    borderRadius: 35,
-    marginBottom: 80,
-    marginHorizontal: 6,
+    marginHorizontal: 4,
+    borderRadius: 28,
+    overflow: 'hidden',
     elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.1,
-    shadowRadius: 10,
+    shadowRadius: 12,
   },
-  cardInternal: {
-    flex: 1,
+  cardPressed: {
+    transform: [{ scale: 0.98 }],
+  },
+  cardGradient: {
+    height: 200,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 12,
   },
   iconWrapper: {
     width: 65,
@@ -171,11 +225,29 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   subjectCode: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '800',
     color: '#2A3A48',
+    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
+  cardBadge: {
+    marginTop: 8,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  badgeGradient: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#fff',
+    letterSpacing: 0.5,
   },
 });
