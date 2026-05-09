@@ -1,61 +1,62 @@
-import React, { useRef } from "react";
-import { View,Text, StyleSheet, StatusBar, TouchableOpacity, Dimensions, Pressable, Platform, Animated} from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useRef } from "react";
+import { Animated, Dimensions, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const { width } = Dimensions.get("window");
-
 
 type DifficultyLevel = "easy" | "medium" | "hard";
 
 export default function QuestionsBank() {
-  const { code } = useLocalSearchParams<{ code: string }>();
+  const { code, chapter } = useLocalSearchParams<{ code: string, chapter: string}>();
   const router = useRouter();
+  const PRIMARY_COLOR = "#135D56";
+  const ACCENT_ORANGE = "#135D56";
 
-  const PRIMARY_COLOR = "#135D56"; 
-  const ACCENT_ORANGE = "#135D56"; 
-
-  
   const DifficultyButton = ({ level }: { level: DifficultyLevel }) => {
-    
     const animValue = useRef(new Animated.Value(0)).current;
 
-    
     const animate = (toValue: number) => {
       Animated.timing(animValue, {
         toValue: toValue,
-        duration: 150, 
-        useNativeDriver: false, 
+        duration: 150,
+        useNativeDriver: false,
       }).start();
     };
 
-    
     const backgroundColor = animValue.interpolate({
       inputRange: [0, 1],
-      outputRange: ["#FFFFFF", ACCENT_ORANGE], 
+      outputRange: ["#FFFFFF", ACCENT_ORANGE],
     });
 
     const textColor = animValue.interpolate({
       inputRange: [0, 1],
-      outputRange: ["#135D56", "#FFFFFF"], 
+      outputRange: ["#135D56", "#FFFFFF"],
     });
 
     const scale = animValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [1, 1.04], 
+      outputRange: [1, 1.04],
     });
 
     return (
       <Pressable
-        
+
         onPressIn={() => animate(1)}
-        
+
         onPressOut={() => animate(0)}
-        
+
         onHoverIn={() => Platform.OS === "web" && animate(1)}
         onHoverOut={() => Platform.OS === "web" && animate(0)}
         onPress={() => {
-          console.log(`Selected: ${level}`);
+          router.push({
+            pathname: "/questions",
+            params: {
+              difficulty: level,
+              subject: code,
+              chapter: chapter,
+            },
+          });
         }}
         style={{ width: "100%", alignItems: "center" }}
       >
@@ -80,37 +81,74 @@ export default function QuestionsBank() {
     <View style={styles.container}>
       <StatusBar backgroundColor={PRIMARY_COLOR} barStyle="light-content" />
 
-      
+
       <View style={[styles.header, { backgroundColor: PRIMARY_COLOR }]}>
         <View>
           <Text style={styles.headerTitle}>{code || "Subject"}</Text>
           <Text style={styles.headerSubtitle}>Questions Bank</Text>
         </View>
 
-        <TouchableOpacity 
-           style={styles.backBtn} 
-           onPress={() => router.back()}
-           activeOpacity={0.7}
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => router.back()}
+          activeOpacity={0.7}
         >
           <Ionicons name="arrow-back" size={22} color={PRIMARY_COLOR} />
         </TouchableOpacity>
       </View>
 
-      
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
       <View style={styles.body}>
         <View style={styles.logoContainer}>
-          <Ionicons name="school" size={55} color={PRIMARY_COLOR} />
+          <Ionicons name="extension-puzzle-outline" size={55} color={PRIMARY_COLOR} />
         </View>
 
         <Text style={styles.sectionTitle}>Select Difficulty</Text>
 
-        
+
         <View style={styles.cardsContainer}>
           <DifficultyButton level="easy" />
           <DifficultyButton level="medium" />
           <DifficultyButton level="hard" />
         </View>
+        <View style={styles.testSection}>
+          <View style={styles.logoContainer}>
+            <Ionicons name="create-outline" size={55} color={PRIMARY_COLOR} />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.rectCard, { backgroundColor: "#FFFFFF", marginTop: 10 }]}
+            onPress={() => {
+              router.push({
+                pathname: "/test",
+                params: { code: code }
+              });
+            }}
+          >
+            <Text style={[styles.cardText, { color: PRIMARY_COLOR }]}>
+              TEST YOURSELF
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.rectCard, { backgroundColor: "#FFFFFF", marginTop: 15 }]}
+            onPress={() => {
+              router.push({
+                pathname: "/review",
+                params: { code: code }
+              });
+            }}
+          >
+            <Text style={[styles.cardText, { color: PRIMARY_COLOR }]}>
+              REVIEWS
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
+      </ScrollView>
     </View>
   );
 }
@@ -121,8 +159,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F1F4F4",
   },
   header: {
-    paddingTop: 60,
-    paddingBottom: 30,
+    paddingTop: 55,
+    paddingBottom: 25,
     paddingHorizontal: 25,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -149,8 +187,10 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 15,
   },
+  scrollContent: {
+    paddingBottom: 40,
+  },
   body: {
-    flex: 1,
     alignItems: "center",
     paddingTop: 40,
   },
@@ -173,7 +213,7 @@ const styles = StyleSheet.create({
     gap: 15,
   },
   rectCard: {
-    width: "85%", 
+    width: "85%",
     paddingVertical: 20,
     borderRadius: 22,
     alignItems: "center",
@@ -188,5 +228,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "900",
     letterSpacing: 0.5,
+  },
+  testSection: {
+    marginTop: 40,
+    width: "100%",
+    alignItems: "center",
   },
 });
