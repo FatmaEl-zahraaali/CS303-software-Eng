@@ -7,10 +7,8 @@ export default function Subject() {
   const router = useRouter();
   const { code } = useLocalSearchParams<{ code: string }>();
   const { width } = useWindowDimensions();
-
   const PRIMARY_COLOR = "#135D56";
   const LIGHT_BG = "#E0F2F1";
-
   const isMobile = width < 600;
   const isTablet = width >= 600 && width < 1024;
 
@@ -18,8 +16,8 @@ export default function Subject() {
     ? width * 0.75
     
     : isTablet
-    ? width * 0.35
-    : width * 0.22;
+      ? width * 0.35
+      : width * 0.22;
 
   const [backActive, setBackActive] = useState(false);
 
@@ -55,7 +53,6 @@ export default function Subject() {
         <Text style={[styles.cardText, active && { color: "#fff" }]}>
           {title}
         </Text>
-        
         {isNew && !active && (
           <View style={styles.newBadge}>
             <Text style={styles.newBadgeText}>NEW</Text>
@@ -69,9 +66,9 @@ export default function Subject() {
     <View style={styles.container}>
       <StatusBar backgroundColor={PRIMARY_COLOR} barStyle="light-content" />
 
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>{code}</Text>
 
+      <View style={styles.header}>       
+          <Text style={styles.headerTitle}>{code}</Text>
         <Pressable
           onPress={() => router.back()}
           onHoverIn={() => Platform.OS === "web" && setBackActive(true)}
@@ -84,8 +81,7 @@ export default function Subject() {
               backgroundColor: PRIMARY_COLOR,
               transform: [{ scale: 1.1 }],
             },
-          ]}
-        >
+          ]}>
           <Ionicons
             name="arrow-back"
             size={22}
@@ -94,37 +90,33 @@ export default function Subject() {
         </Pressable>
       </View>
 
-      
-      <ScrollView 
+     <ScrollView 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         bounces={true}
       >
-        <View style={styles.body}>
-          <View style={styles.logo}>
-            <Ionicons name="school" size={55} color={PRIMARY_COLOR} />
-          </View>
+      <View style={styles.body}>
+        <View style={styles.logo}>
+          <Ionicons name="swap-horizontal-outline" size={55} color={PRIMARY_COLOR} />
+        </View>
 
-          <Text style={styles.title}>Options</Text>
+        <Text style={styles.title}>Options</Text>
 
-          <View style={styles.grid}>
-            <Card
-              title="Attendance"
-              icon="checkmark-done"
-              onPress={() =>
-                router.push({ pathname: "/attendance", params: { code } })
-              }
-            />
-
-            <Card
-              title="Questions"
-              icon="help-circle"
-              onPress={() =>
-                router.push({ pathname: "/questionsbank", params: { code } })
-              }
-            />
-
-            <Card
+        <View style={styles.grid}>
+          <Card
+            title="Attendance"
+            icon="checkmark-done"
+            onPress={() =>
+              router.push({ pathname: "/attendance", params: { code } })
+            }/>
+          <Card
+            title="Questions"
+            icon="help-circle"
+            onPress={() =>
+              router.push({ pathname: "/chapters", params: { code } })
+            }
+          />
+          <Card
               title="AI Assistant"
               icon="chatbubbles"
               onPress={() =>
@@ -132,8 +124,8 @@ export default function Subject() {
               }
               isNew={true}
             />
-          </View>
         </View>
+      </View>
       </ScrollView>
     </View>
   );
@@ -147,56 +139,49 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F1F4F4",
   },
-
   header: {
-    paddingTop: Platform.OS === "android" ? 40 : 60,
-    paddingHorizontal: 20,
+    paddingTop: 55,
     paddingBottom: 25,
-    backgroundColor: PRIMARY_COLOR,
+    paddingHorizontal: 25,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottomLeftRadius: 35,
-    borderBottomRightRadius: 35,
+    backgroundColor: "#135D56",
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
   },
-
   headerTitle: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: "800",
     color: "#fff",
   },
-
+  headerSubtitle: {
+    fontSize: 14,
+    color: "#E0F2F1",
+    marginTop: 2,
+  },
   backBtn: {
     backgroundColor: "#fff",
     padding: 10,
     borderRadius: 12,
   },
-
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: "center",
-    paddingBottom: 30,
-  },
-
   body: {
+    flex: 1,
     alignItems: "center",
     paddingTop: 30,
     paddingHorizontal: 20,
   },
-
   logo: {
     backgroundColor: LIGHT_BG,
     padding: 20,
     borderRadius: 40,
     marginBottom: 15,
   },
-
   title: {
     fontSize: 22,
     fontWeight: "800",
     marginBottom: 20,
   },
-
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -204,7 +189,6 @@ const styles = StyleSheet.create({
     gap: 20,
     maxWidth: 1000,
   },
-
   card: {
     height: 180,
     minWidth: 220,
@@ -214,14 +198,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     elevation: 6,
-    position: "relative",
   },
-
   cardActive: {
     backgroundColor: PRIMARY_COLOR,
     transform: [{ scale: 1.06 }],
   },
-
   iconBox: {
     width: 60,
     height: 60,
@@ -230,13 +211,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
   },
-
   cardText: {
     fontSize: 16,
     fontWeight: "800",
     color: "#2A3A48",
   },
-
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingBottom: 30,
+  },
   newBadge: {
     position: "absolute",
     top: 12,
@@ -246,11 +230,9 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 12,
   },
-
   newBadgeText: {
     fontSize: 10,
     fontWeight: "bold",
     color: "#fff",
   },
 });
-      

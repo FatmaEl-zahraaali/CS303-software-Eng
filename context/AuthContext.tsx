@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { auth, db } from "../config/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { auth, db } from "../config/firebaseConfig";
 
 type UserData = {
   uid: string;
@@ -30,20 +30,12 @@ export const AuthProvider = ({ children }: any) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
+      setLoading(true);
       if (u) {
-        await u.reload();
-
-        
-        if (!u.emailVerified) {
-          setUser(null);
-          setUserData(null);
-          setLoading(false);
-          return;
-        }
-
-        setUser(u);
-
         try {
+          await u.reload();
+          setUser(u);
+
           const docRef = doc(db, "users", u.uid);
           const snap = await getDoc(docRef);
 
@@ -52,15 +44,13 @@ export const AuthProvider = ({ children }: any) => {
           } else {
             setUserData(null);
           }
-        } catch (e) {
-          console.log("Firestore error:", e);
-          setUserData(null);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
         }
       } else {
         setUser(null);
         setUserData(null);
       }
-
       setLoading(false);
     });
 
