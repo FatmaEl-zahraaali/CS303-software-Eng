@@ -7,7 +7,7 @@ import { db } from '../../config/firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
 
 export default function AddQuestionScreen() {
-  const { userData } = useAuth();
+  const { userData, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['', '', '', '']);
@@ -20,11 +20,16 @@ export default function AddQuestionScreen() {
   const difficulties = ['Easy', 'Medium', 'Hard'];
 
   const handleSave = async () => {
+    if (!userData?.uid) {
+      Alert.alert("Error", "User data not loaded. Please wait or log in again.");
+      return;
+    }
+    const isOptionsValid = options.every(opt => opt && opt.trim() !== '');
     if (
       !question.trim() ||
       !subject.trim() ||
       !chapter.trim() ||
-      options.some(opt => !opt.trim()) ||
+      !isOptionsValid ||
       correctIndex === null
     ) {
       Alert.alert("Error", "Please fill all fields, including Subject and Chapter.");
@@ -35,18 +40,17 @@ export default function AddQuestionScreen() {
     try {
       await addDoc(collection(db, "questions"), {
         subject: subject.trim(),
-        chapter: parseInt(chapter),
-        questionText: question,
-        options: options,
-        correctAnswer: options[correctIndex],
+        chapter: parseInt(chapter) || 0,
+        questionText: question.trim(),
+        options: options.map(opt => opt.trim()),
+        correctAnswer: options[correctIndex].trim(),
         difficulty: difficulty,
-        doctorId: userData?.uid,
-        doctorName: userData?.name,
+        doctorId: userData.uid,
+        doctorName: userData.name || "Doctor",
         createdAt: serverTimestamp(),
       });
 
       Alert.alert("Success", "Question added to the bank successfully");
-
       setQuestion('');
       setOptions(['', '', '', '']);
       setCorrectIndex(null);
@@ -54,7 +58,8 @@ export default function AddQuestionScreen() {
       setChapter('');
       setShowFeedback(false);
     } catch (error) {
-      Alert.alert("Error", "Failed to save the question");
+      console.error(error);
+      Alert.alert("Error", "Failed to save: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -67,6 +72,15 @@ export default function AddQuestionScreen() {
     if (index === correctIndex) return styles.correctFeedback;
     return styles.wrongFeedback;
   };
+
+  if (authLoading) {
+    return (
+      <View style={[styles.mainContainer, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={{ marginTop: 10, color: '#475569' }}>Loading Auth Data...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.mainContainer}>
@@ -86,7 +100,7 @@ export default function AddQuestionScreen() {
         <Text style={styles.label}>Subject Name</Text>
         <TextInput
           style={styles.input}
-          placeholder=""
+          placeholder="e.g. CS303"
           value={subject}
           onChangeText={setSubject}
         />
@@ -94,7 +108,7 @@ export default function AddQuestionScreen() {
         <Text style={styles.label}>Chapter Number</Text>
         <TextInput
           style={styles.input}
-          placeholder=""
+          placeholder="Number only"
           value={chapter}
           onChangeText={setChapter}
           keyboardType="numeric"
@@ -148,7 +162,7 @@ export default function AddQuestionScreen() {
           </View>
         ))}
 
-        {showFeedback && (
+        {showFeedback && correctIndex !== null && (
           <Text style={styles.feedbackText}>
             Correct Answer is: {options[correctIndex]}
           </Text>
@@ -170,7 +184,7 @@ export default function AddQuestionScreen() {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F8FAFC'
   },
   headerContainer: {
     backgroundColor: "#007AFF",
@@ -191,7 +205,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: "#fff",
     fontSize: 22,
-    fontWeight: "bold",
+    fontWeight: "bold"
   },
   backBtn: {
     backgroundColor: "#fff",
@@ -199,19 +213,7 @@ const styles = StyleSheet.create({
     height: 45,
     borderRadius: 12,
     justifyContent: "center",
-    alignItems: "center",
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-    padding: 20
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#1E293B'
+    alignItems: "center"
   },
   label: {
     fontSize: 16,
@@ -225,7 +227,8 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#E2E8F0'
+    borderColor: '#E2E8F0',
+    color: '#000'
   },
   diffGroup: {
     flexDirection: 'row',
@@ -251,12 +254,10 @@ const styles = StyleSheet.create({
   },
   optionRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10
+    alignItems: 'center', gap: 10
   },
   radio: {
-    width: 34,
-    height: 34,
+    width: 34, height: 34,
     borderRadius: 17,
     borderWidth: 2,
     borderColor: '#007AFF',

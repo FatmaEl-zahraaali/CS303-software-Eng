@@ -1,4 +1,4 @@
-import { addDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, serverTimestamp, where } from 'firebase/firestore';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
@@ -20,19 +20,17 @@ export default function AttendanceScreen() {
 
     setLoading(true);
     try {
-      const sessionsSnapshot = await getDocs(
-        collection(db, "attendance_sessions")
+      const q = query(
+        collection(db, "attendance_sessions"),
+        where("subject", "==", subjectName.trim().toUpperCase())
       );
-
-      const sameSubjectSessions = sessionsSnapshot.docs.filter(
-        (doc) => doc.data().subject === subjectName
-      );
-
-      const newSessionNumber = sameSubjectSessions.length + 1;
+      
+      const sessionsSnapshot = await getDocs(q);
+      const newSessionNumber = sessionsSnapshot.size + 1;
 
       const docRef = await addDoc(collection(db, "attendance_sessions"), {
-        doctorId: userData?.uid,
-        doctorName: userData?.name,
+        doctorId: userData?.uid || 'unknown',
+        doctorName: userData?.name || 'Instructor',
         subject: subjectName.trim().toUpperCase(),
         sessionNumber: newSessionNumber,
         createdAt: serverTimestamp(),
@@ -40,8 +38,8 @@ export default function AttendanceScreen() {
       });
 
       setSessionNumber(newSessionNumber);
-
       setSessionId(docRef.id);
+      
       Alert.alert("Success", `Attendance session for ${subjectName} started.`);
     } catch (error) {
       console.error(error);
@@ -59,7 +57,7 @@ export default function AttendanceScreen() {
         <ActivityIndicator size="large" color="#007AFF" />
       ) : sessionId ? (
         <View style={styles.qrContainer}>
-          <Text style={styles.subjectTitle}>{subjectName}</Text>
+          <Text style={styles.subjectTitle}>{subjectName.toUpperCase()}</Text>
           <QRCode
             value={JSON.stringify({
               courseName: subjectName.trim().toUpperCase(),
@@ -131,7 +129,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 20,
     alignItems: 'center',
-    elevation: 5
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
   },
   subjectTitle: {
     fontSize: 20,

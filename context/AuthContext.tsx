@@ -30,9 +30,11 @@ export const AuthProvider = ({ children }: any) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
+      setLoading(true);
       if (u) {
-        await u.reload();
-        setUser(u);
+        try {
+          await u.reload();
+          setUser(u);
 
           const docRef = doc(db, "users", u.uid);
           const snap = await getDoc(docRef);
@@ -42,13 +44,13 @@ export const AuthProvider = ({ children }: any) => {
           } else {
             setUserData(null);
           }
-          setUserData(null);
-        
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
       } else {
         setUser(null);
         setUserData(null);
       }
-
       setLoading(false);
     });
 
