@@ -16,6 +16,7 @@ export default function Subject() {
 
   const CARD_SIZE = isMobile
     ? width * 0.75
+    
     : isTablet
     ? width * 0.35
     : width * 0.22;
@@ -252,3 +253,4 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
 });
+      
