@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Image, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { getAuth } from "firebase/auth";
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "../../config/firebaseConfig";
 import { useAuth } from '../../context/AuthContext';
 
@@ -15,26 +16,24 @@ const DoctorProfile = () => {
   const [uploading, setUploading] = useState(false);
   const [currentImage, setCurrentImage] = useState('https://via.placeholder.com/150');
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [displayName, setDisplayName] = useState('');
 
   useEffect(() => {
-    if (userData?.uid) {
-      const userRef = doc(db, "users", userData.uid);
-      const unsubscribe = onSnapshot(userRef, (doc) => {
-        if (doc.exists()) {
-          setCurrentImage(doc.data().profileImage || 'https://via.placeholder.com/150');
+    const auth = getAuth();
+    const userId = userData?.uid || auth.currentUser?.uid;
+
+    if (userId) {
+      const userRef = doc(db, "users", userId);
+      const unsubscribe = onSnapshot(userRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setCurrentImage(data.profileImage || 'https://via.placeholder.com/150');
+          setDisplayName(data.name || "Doctor");
         }
       });
       return () => unsubscribe();
     }
   }, [userData?.uid]);
-
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#007AFF" />
-      </View>
-    );
-  }
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -81,9 +80,13 @@ const DoctorProfile = () => {
       const result = await res.json();
 
       if (result.secure_url) {
-        const userRef = doc(db, "users", userData?.uid!);
-        await updateDoc(userRef, { profileImage: result.secure_url });
-        Alert.alert("Success", "Profile picture updated!");
+        const auth = getAuth();
+        const userId = userData?.uid || auth.currentUser?.uid;
+        if (userId) {
+          const userRef = doc(db, "users", userId);
+          await updateDoc(userRef, { profileImage: result.secure_url });
+          Alert.alert("Success", "Profile picture updated!");
+        }
       }
     } catch (error) {
       Alert.alert("Error", "Upload failed");
@@ -91,6 +94,14 @@ const DoctorProfile = () => {
       setUploading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -129,7 +140,7 @@ const DoctorProfile = () => {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.name}>Dr. {userData?.name || "Doctor"}</Text>
+        <Text style={styles.name}>Dr. {displayName}</Text>
       </View>
 
       <View style={styles.grid}>
@@ -148,7 +159,7 @@ const DoctorProfile = () => {
           <Text style={styles.cardTitle}>Attendance List</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card} onPress={() => router.push('/screens/dashboard' as any)}>
+        <TouchableOpacity style={styles.card} onPress={() => router.push('/dashboard')}>
           <Ionicons name="stats-chart-outline" size={32} color="#5856D6" />
           <Text style={styles.cardTitle}>Dashboard</Text>
         </TouchableOpacity>
@@ -156,6 +167,14 @@ const DoctorProfile = () => {
         <TouchableOpacity style={styles.card} onPress={() => router.push('/screens/DoctorResultsScreen')}>
           <Ionicons name="star-outline" size={32} color="#FF9500" />
           <Text style={styles.cardTitle}>Reviews</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.card, styles.aiCard]}
+          onPress={() => router.push('/screens/AI/ai-generator')}>
+          <Ionicons name="bulb-outline" size={34} color="#8B5CF6" />
+          <Text style={styles.cardTitle}>AI Quiz</Text>
+          <Text style={styles.aiBadge}>NEW</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -252,7 +271,24 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 10,
     color: '#333'
-  }
+  },
+  aiCard: {
+    borderWidth: 1,
+    borderColor: '#8B5CF6',
+    backgroundColor: '#F3E8FF',
+  },
+  aiBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 12,
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    fontSize: 8,
+    fontWeight: 'bold',
+    color: '#fff',
+    overflow: 'hidden',
+  },
 });
-
 export default DoctorProfile;

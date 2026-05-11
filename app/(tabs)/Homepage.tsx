@@ -48,7 +48,6 @@ export default function SubjectList() {
     });
   };
 
-
   const SubjectCard = ({ code, icon }: { code: string, icon: any }) => {
     return (
       <Pressable
@@ -210,7 +209,6 @@ const styles = StyleSheet.create({
   searchIcon: {
     marginRight: 8,
   },
-
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',

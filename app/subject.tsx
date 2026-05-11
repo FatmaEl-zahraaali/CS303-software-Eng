@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Platform, Pressable, StatusBar, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 export default function Subject() {
   const router = useRouter();
@@ -20,7 +20,7 @@ export default function Subject() {
 
   const [backActive, setBackActive] = useState(false);
 
-  const Card = ({ title, icon, onPress }: any) => {
+  const Card = ({ title, icon, onPress, isNew = false }: any) => {
     const [active, setActive] = useState(false);
 
     return (
@@ -52,6 +52,11 @@ export default function Subject() {
         <Text style={[styles.cardText, active && { color: "#fff" }]}>
           {title}
         </Text>
+        {isNew && !active && (
+          <View style={styles.newBadge}>
+            <Text style={styles.newBadgeText}>NEW</Text>
+          </View>
+        )}
       </Pressable>
     );
   };
@@ -84,7 +89,11 @@ export default function Subject() {
         </Pressable>
       </View>
 
-
+     <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+      >
       <View style={styles.body}>
         <View style={styles.logo}>
           <Ionicons name="swap-horizontal-outline" size={55} color={PRIMARY_COLOR} />
@@ -106,8 +115,17 @@ export default function Subject() {
               router.push({ pathname: "/chapters", params: { code } })
             }
           />
+          <Card
+              title="AI Assistant"
+              icon="chatbubbles"
+              onPress={() =>
+                router.push({ pathname: "/screens/AI/ai-assistant", params: { code } })
+              }
+              isNew={true}
+            />
         </View>
       </View>
+      </ScrollView>
     </View>
   );
 }
@@ -120,7 +138,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F1F4F4",
   },
-
   header: {
     paddingTop: 55,
     paddingBottom: 25,
@@ -132,13 +149,11 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
   },
-
   headerTitle: {
     fontSize: 28,
     fontWeight: "800",
     color: "#fff",
   },
-
   headerSubtitle: {
     fontSize: 14,
     color: "#E0F2F1",
@@ -149,27 +164,23 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 12,
   },
-
   body: {
     flex: 1,
     alignItems: "center",
     paddingTop: 30,
     paddingHorizontal: 20,
   },
-
   logo: {
     backgroundColor: LIGHT_BG,
     padding: 20,
     borderRadius: 40,
     marginBottom: 15,
   },
-
   title: {
     fontSize: 22,
     fontWeight: "800",
     marginBottom: 20,
   },
-
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -177,7 +188,6 @@ const styles = StyleSheet.create({
     gap: 20,
     maxWidth: 1000,
   },
-
   card: {
     height: 180,
     minWidth: 220,
@@ -188,12 +198,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     elevation: 6,
   },
-
   cardActive: {
     backgroundColor: PRIMARY_COLOR,
     transform: [{ scale: 1.06 }],
   },
-
   iconBox: {
     width: 60,
     height: 60,
@@ -202,10 +210,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
   },
-
   cardText: {
     fontSize: 16,
     fontWeight: "800",
     color: "#2A3A48",
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingBottom: 30,
+  },
+  newBadge: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    backgroundColor: "#135D56",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  newBadgeText: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#fff",
   },
 });
