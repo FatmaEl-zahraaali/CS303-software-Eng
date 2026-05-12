@@ -21,7 +21,6 @@ interface TutorData {
 
 
 export const generateQuiz = onCall<QuizData>(async (request) => {
-  console.log("=========================================");
   console.log(" Function generateQuiz started!");
   
   if (!request.auth) {
