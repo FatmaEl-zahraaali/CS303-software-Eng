@@ -16,19 +16,24 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npx expo start
    ```
 3.  Start Ai function
+   
       cd functions
+    
       npm run build
+    
       cd ..
    
    
    kay1
    
    set GEMINI_API_KEY=AQ.Ab8RN6LyGRiBkP8N4ZqqwjXBO7E053Mrss_bHWi-dlQgotdMbg
+   
    firebase emulators:start
    
    kay2
    
    set GEMINI_API_KEY=AIzaSyAZeIxszuKpBkhdCDRe5ZeHKSxmHEdIPAY
+   
    firebase emulators:start
 
 In the output, you'll find options to open the app in a
